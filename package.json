@@ -1,0 +1,25 @@
+{
+  "name": "simple-chain-project2",
+  "version": "1.0.0",
+  "description": "Simple private blockchain for the Udacity Blockchain Nanodegree Project 2",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "blockchain",
+    "nodejs",
+    "private",
+    "simple"
+  ],
+  "author": "Juri Thommen",
+  "license": "ISC",
+  "dependencies": {
+    "crypto-js": "^3.1.9-1",
+    "level": "^4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://local"
+  }
+}
