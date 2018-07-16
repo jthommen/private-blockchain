@@ -1,16 +1,11 @@
 //### Define Block constructor
 
+const SHA256 = require('crypto-js/sha256');
 
-module.exports = function constructor() {
-
-}
-
-class Block{
-	constructor(data){
-     this.hash = "",
-     this.height = 0,
-     this.body = data,
-     this.time = 0,
-     this.previousBlockHash = ""
-    }
+module.exports = function Constructor() {
+  this.hash  = SHA256(JSON.stringify(this)).toString();
+  this.height =  0;
+  this.body = "";
+  this.time = new Date().getTime().toString().slice(0,-3);
+  this.previousBlockHash =  ""
 }
