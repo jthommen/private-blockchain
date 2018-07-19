@@ -64,61 +64,81 @@ function getBlockHeight() {
 // prints block from blockchain db
 function getBlock(blockHeight) {
   level.getBlockFromDB(blockHeight)
-    .then( block => {
-      console.log(block);
-    })
+    .then( block => console.log(block))
     .catch(err => console.log(err));
 }
 
-// TODO: Write with promises
-function validateBlock(blockHeight){
-// Function validate block
-  // check for block data from levelDB
-  // run validation
-  // return result
-let block = getBlock(blockHeight);
-// get block hash
-let blockHash = block.hash;
-// remove block hash to test block integrity
-block.hash = '';
-// generate block hash
-let validBlockHash = SHA256(JSON.stringify(block)).toString();
-// Compare
-if (blockHash===validBlockHash) {
-    return true;
-  } else {
-    console.log('Block #'+blockHeight+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
-    return false;
+function getChain() {
+  level.getChainFromDB()
+    .then(chain => console.log(chain))
+    .catch(err => console.log(err));
+}
+
+function validation(block){
+
+  // Clone object so it's not corrupted for further testin
+  let clone = Object.assign({}, block);
+
+  // get block hash
+  let blockHash = clone.hash;
+  // remove block hash to test block integrity
+  clone.hash = '';
+  // generate block hash
+  let validBlockHash = SHA256(JSON.stringify(clone)).toString();
+  // Compare
+  if (blockHash===validBlockHash) {
+      return true;
+    } else {
+      console.log('Block #'+clone.height+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
+      return false;
   }
 }
 
-// TODO: Write with promises
-function validateChain(){
 // Function validate chain
   // get all blockchain data from levelDB
   // run validation
   // return result
+function validateChain(){
+  level.getChainFromDB()
+  .then(chain => {
+    let errorLog = [];
 
-  // Validate blockchain
-  let chain = level.getChainFromDB();
-  let blockHeight = level.getBlockHeight();
-  let errorLog = [];
-  for (var i = 0; i < blockHeight; i++) {
-    // validate block
-    if (!validateBlock(i)) errorLog.push(i);
-    // compare blocks hash link
-    let blockHash = chain[i].hash;
-    let previousHash = chain[i+1].previousBlockHash;
-    if (blockHash!==previousHash) {
-      errorLog.push(i);
+    for (let i = 1; i < chain.length; i++) {
+
+      // validate bock
+      if (!validation(chain[i])) errorLog.push(i);
+
+      // compare blocks hash link
+      let previousBlockHash = chain[i].previousBlockHash;
+      let blockHashPrevious = chain[i-1].hash;
+
+      if (previousBlockHash !== blockHashPrevious) {
+        errorLog.push(i);
+      }
+
     }
-  }
-  if (errorLog.length>0) {
-    console.log('Block errors = ' + errorLog.length);
-    console.log('Blocks: '+errorLog);
-  } else {
-    console.log('No errors detected');
-  }
+
+    if (errorLog.length>0) {
+      console.log('Block errors = ' + errorLog.length);
+      console.log('Blocks: '+ errorLog);
+    } else {
+      console.log('No errors detected');
+    }
+
+  });
+}
+
+function validateBlock(blockHeight) {
+  level.getBlockFromDB(blockHeight.toString())
+    .then(block => {
+      if(!validation(block)) {
+        console.log(`Block ${blockHeight} is corrupted!`);
+      } else {
+        console.log(`Block ${blockHeight} is secure.`);
+      }
+
+    })
+    .catch(err => console.log(err));
 }
 
 module.exports = {
@@ -126,6 +146,7 @@ module.exports = {
   addBlock: addBlock,
   getBlockHeight: getBlockHeight,
   getBlock: getBlock,
+  getChain: getChain,
   validateBlock: validateBlock,
   validateChain: validateChain
 }

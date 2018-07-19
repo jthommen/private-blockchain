@@ -18,8 +18,8 @@ function getBlockFromDB(blockHeight){
 function getChainFromDB(){
   return new Promise( (resolve, reject) => {
     let chain = [];
-    db.createReadStream().on('data', block => {
-        chain.push(block);
+    db.createValueStream().on('data', block => {
+        chain.push(JSON.parse((block)));
       }).on('error', (err) => {
         reject(new Error('Unable to read data stream!', err));
       }).on('close', () => {
