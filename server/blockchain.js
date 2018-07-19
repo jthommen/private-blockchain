@@ -1,4 +1,4 @@
-//### Blockchain management functions
+/** Blockchain management functions */
 
 const Block = require('./model/block');
 const level = require('./level-utilities');
@@ -23,10 +23,9 @@ function init() {
     .catch(err => console.log(err));
 }
 
-// call constructor to create new block
-// Overwrite properties in object
+// Calls constructor to create new block
+// overwrite properties in object
 // add block to chain in levelDB
-// return success or error message
 function addBlock(data) {
   if(!data) throw new Error("Can't create a block without data!");
   let newBlock = new Block();
@@ -57,23 +56,66 @@ function addBlock(data) {
 // Prints blockheight from blockchain db
 function getBlockHeight() {
   level.getBlockHeight()
-    .then( height => console.log("The block height is: ", height))
+    .then( height => {
+      console.log(`The block height is ${height}, there are ${height+1}
+       block(s) in the chain.`)})
     .catch(err => console.log(err));
 }
 
-// prints block from blockchain db
+// Prints block from blockchain db
 function getBlock(blockHeight) {
   level.getBlockFromDB(blockHeight)
     .then( block => console.log(block))
     .catch(err => console.log(err));
 }
 
+// Prints whole chain data
 function getChain() {
   level.getChainFromDB()
     .then(chain => console.log(chain))
     .catch(err => console.log(err));
 }
 
+// Validates whole chain
+// get all blockchain data from levelDB
+// run validation on single block and linkage
+function validateChain(){
+  level.getChainFromDB()
+  .then(chain => {
+    let errorLog = [];
+    for (let i = 1; i < chain.length; i++) {
+      // validate bock
+      if (!validation(chain[i])) errorLog.push(i);
+      // compare blocks hash link
+      let previousBlockHash = chain[i].previousBlockHash;
+      let blockHashPrevious = chain[i-1].hash;
+      if (previousBlockHash !== blockHashPrevious) {
+        errorLog.push(i);
+      }
+    }
+    if (errorLog.length>0) {
+      console.log('Block errors = ' + errorLog.length);
+      console.log('Blocks: '+ errorLog);
+    } else {
+      console.log('No errors detected');
+    }
+  });
+}
+
+// Calls the validation function to validate a single block
+function validateBlock(blockHeight) {
+  level.getBlockFromDB(blockHeight.toString())
+    .then(block => {
+      if(!validation(block)) {
+        console.log(`Block ${blockHeight} is corrupted!`);
+      } else {
+        console.log(`Block ${blockHeight} is secure.`);
+      }
+    })
+    .catch(err => console.log(err));
+}
+
+// Validation helper function
 function validation(block){
 
   // Clone object so it's not corrupted for further testin
@@ -92,53 +134,6 @@ function validation(block){
       console.log('Block #'+clone.height+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
       return false;
   }
-}
-
-// Function validate chain
-  // get all blockchain data from levelDB
-  // run validation
-  // return result
-function validateChain(){
-  level.getChainFromDB()
-  .then(chain => {
-    let errorLog = [];
-
-    for (let i = 1; i < chain.length; i++) {
-
-      // validate bock
-      if (!validation(chain[i])) errorLog.push(i);
-
-      // compare blocks hash link
-      let previousBlockHash = chain[i].previousBlockHash;
-      let blockHashPrevious = chain[i-1].hash;
-
-      if (previousBlockHash !== blockHashPrevious) {
-        errorLog.push(i);
-      }
-
-    }
-
-    if (errorLog.length>0) {
-      console.log('Block errors = ' + errorLog.length);
-      console.log('Blocks: '+ errorLog);
-    } else {
-      console.log('No errors detected');
-    }
-
-  });
-}
-
-function validateBlock(blockHeight) {
-  level.getBlockFromDB(blockHeight.toString())
-    .then(block => {
-      if(!validation(block)) {
-        console.log(`Block ${blockHeight} is corrupted!`);
-      } else {
-        console.log(`Block ${blockHeight} is secure.`);
-      }
-
-    })
-    .catch(err => console.log(err));
 }
 
 module.exports = {

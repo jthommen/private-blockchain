@@ -1,8 +1,8 @@
-//### Simplechain Front-End functions to interact with the blockchain
+/** Simplechain Front-End functions to interact with the blockchain */
 
 const blockchain = require('./server/blockchain');
 
-// Function initialize blockchain interaction
+// Function initializes blockchain interaction
 (function() {
   blockchain.init();
 })();

@@ -1,10 +1,10 @@
-//### Helper functions to interact with levelDB
+/** Helper functions to interact with levelDB */
 
 const level = require('level');
 const chainDB = './chaindata';
 const db = level(chainDB);
 
-// Get single block data
+// Get single block data from levelDB
 function getBlockFromDB(blockHeight){
   return new Promise( (resolve, reject) => {
     let key = blockHeight.toString();
@@ -14,7 +14,7 @@ function getBlockFromDB(blockHeight){
   });
 }
 
-// Get whole blockchain data
+// Get whole blockchain data from levelDB
 function getChainFromDB(){
   return new Promise( (resolve, reject) => {
     let chain = [];
@@ -28,7 +28,7 @@ function getChainFromDB(){
   });
 }
 
-// Add block to chain
+// Add block to chain in levelDB
 function addBlockToDB(height, block) {
   return new Promise( (resolve, reject) => {
     db.put(height, block)
@@ -37,8 +37,7 @@ function addBlockToDB(height, block) {
   });
 }
 
-// Checks last block in DB and returns the key
-// the key represents the blockheight
+// Checks last block in DB and returns the block height
 function getBlockHeight(){
   return new Promise( (resolve, reject) => {
     let dataLength = 0;

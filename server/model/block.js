@@ -1,4 +1,4 @@
-//### Define Block constructor
+/** Define Block constructor */
 
 module.exports = function Constructor() {
   this.hash  = "";
