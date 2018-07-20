@@ -83,6 +83,11 @@ function validateChain(){
   level.getChainFromDB()
   .then(chain => {
     let errorLog = [];
+
+    // validate genesis block
+    if (!validation(chain[0])) errorLog.push(0);
+
+    // validate rest of the blocks
     for (let i = 1; i < chain.length; i++) {
       // validate bock
       if (!validation(chain[i])) errorLog.push(i);
