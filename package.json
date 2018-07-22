@@ -4,7 +4,7 @@
   "description": "Simple private blockchain for the Udacity Blockchain Nanodegree",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/jasmine-node spec"
   },
   "keywords": [
     "blockchain",
@@ -17,10 +17,12 @@
   "dependencies": {
     "crypto-js": "^3.1.9-1",
     "hapi": "^17.5.2",
+    "jasmine-node": "^2.0.1",
     "level": "^4.0.0"
   },
   "repository": {
     "type": "git",
     "url": "git://local"
-  }
+  },
+  "devDependencies": {}
 }

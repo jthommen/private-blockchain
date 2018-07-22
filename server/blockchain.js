@@ -9,18 +9,19 @@ const SHA256 = require('crypto-js/sha256');
 // creates genesis block otherwise
 // or returns blockheight
 function init() {
-    level.getBlockHeight()
-    .then(blockHeight => {
-      if(blockHeight === undefined) {
-        console.log('New Blockchain created.');
-        return addBlock("genesis");
-      } else {
-        let length = parseInt(blockHeight) + 1;
-        console.log(`Blockchain already exist with ${length} block(s).`);
-      }
-      console.log("Blockchain initialized.");
-    })
-    .catch(err => console.log(err));
+    return level.getBlockHeight()
+      .then(blockHeight => {
+        if(blockHeight === undefined) {
+          console.log('New Blockchain created.');
+          return addBlock("genesis");
+        } else {
+          let length = parseInt(blockHeight) + 1;
+          console.log(`Blockchain already exist with ${length} block(s).`);
+        }
+        console.log("Blockchain initialized.");
+        return 'Success';
+      })
+      .catch(err => console.log(err));
 }
 
 // Calls constructor to create new block
@@ -59,10 +60,12 @@ function addBlock(data) {
 
 // Prints blockheight from blockchain db
 function getBlockHeight() {
-  level.getBlockHeight()
+  return level.getBlockHeight()
     .then( height => {
       console.log(`The block height is ${height}, there are ${height+1}
-       block(s) in the chain.`)})
+       block(s) in the chain.`)
+       return height;
+    })
     .catch(err => console.log(err));
 }
 
@@ -77,8 +80,8 @@ function getBlock(blockHeight) {
 
 // Prints whole chain data
 function getChain() {
-  level.getChainFromDB()
-    .then(chain => console.log(chain))
+  return level.getChainFromDB()
+    .then(chain => {return chain;})
     .catch(err => console.log(err));
 }
 
@@ -86,41 +89,45 @@ function getChain() {
 // get all blockchain data from levelDB
 // run validation on single block and linkage
 function validateChain(){
-  level.getChainFromDB()
-  .then(chain => {
-    let errorLog = [];
+  return level.getChainFromDB()
+    .then(chain => {
+      let errorLog = [];
 
-    // validate genesis block
-    if (!validation(chain[0])) errorLog.push(0);
+      // validate genesis block
+      if (!validation(chain[0])) errorLog.push(0);
 
-    // validate rest of the blocks
-    for (let i = 1; i < chain.length; i++) {
-      // validate bock
-      if (!validation(chain[i])) errorLog.push(i);
-      // compare blocks hash link
-      let previousBlockHash = chain[i].previousBlockHash;
-      let blockHashPrevious = chain[i-1].hash;
-      if (previousBlockHash !== blockHashPrevious) {
-        errorLog.push(i);
+      // validate rest of the blocks
+      for (let i = 1; i < chain.length; i++) {
+        // validate bock
+        if (!validation(chain[i])) errorLog.push(i);
+        // compare blocks hash link
+        let previousBlockHash = chain[i].previousBlockHash;
+        let blockHashPrevious = chain[i-1].hash;
+        if (previousBlockHash !== blockHashPrevious) {
+          errorLog.push(i);
+        }
       }
-    }
-    if (errorLog.length>0) {
-      console.log('Block errors = ' + errorLog.length);
-      console.log('Blocks: '+ errorLog);
-    } else {
-      console.log('No errors detected');
-    }
-  });
+      if (errorLog.length>0) {
+        console.log('Block errors = ' + errorLog.length);
+        console.log('Blocks: '+ errorLog);
+        return errorLog;
+      } else {
+        console.log('No errors detected.');
+        return 'No errors detected.';
+      }
+    });
 }
 
 // Calls the validation function to validate a single block
 function validateBlock(blockHeight) {
-  level.getBlockFromDB(blockHeight.toString())
+  return level.getBlockFromDB(blockHeight.toString())
     .then(block => {
       if(!validation(block)) {
         console.log(`Block ${blockHeight} is corrupted!`);
+        return false;
       } else {
         console.log(`Block ${blockHeight} is secure.`);
+        return true;
       }
     })
     .catch(err => console.log(err));

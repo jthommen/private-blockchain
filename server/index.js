@@ -25,6 +25,7 @@ server.route({
 });
 
 // Saves a new block in the DB
+// Example POST request:
 // curl -X "POST"
   // "http://localhost:8000/block"
   // -H 'Content-Type: application/json'
