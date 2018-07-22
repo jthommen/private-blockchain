@@ -1,7 +1,7 @@
 {
-  "name": "simple-chain-project2",
+  "name": "private-blockchain",
   "version": "1.0.0",
-  "description": "Simple private blockchain for the Udacity Blockchain Nanodegree Project 2",
+  "description": "Simple private blockchain for the Udacity Blockchain Nanodegree",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
