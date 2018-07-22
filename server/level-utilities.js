@@ -32,7 +32,7 @@ function getChainFromDB(){
 function addBlockToDB(height, block) {
   return new Promise( (resolve, reject) => {
     db.put(height, block)
-      .then( () => resolve("New Block added to Chain."))
+      .then( (block) => resolve("Success"))
       .catch( err => reject(new Error(`Block ${height} submission failed `, err)));
   });
 }

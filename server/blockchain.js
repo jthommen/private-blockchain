@@ -29,7 +29,7 @@ function init() {
 function addBlock(data) {
   if(!data) throw new Error("Can't create a block without data!");
   let newBlock = new Block();
-  level.getBlockHeight()
+  return level.getBlockHeight()
     .then(blockHeight => {
       if(data === 'genesis') {
         newBlock.body = "First block in the chain - Genesis block";
@@ -49,7 +49,11 @@ function addBlock(data) {
       let value  = JSON.stringify(newBlock);
 
       return level.addBlockToDB(key, value);
-    }).then( (msg) => console.log(msg))
+    }).then( () => {
+      let block = JSON.stringify(newBlock);
+      console.log("New Block added to Chain.");
+      return block;
+    })
     .catch(err => console.log(err));
 }
 
@@ -64,9 +68,11 @@ function getBlockHeight() {
 
 // Prints block from blockchain db
 function getBlock(blockHeight) {
-  level.getBlockFromDB(blockHeight)
-    .then( block => console.log(block))
-    .catch(err => console.log(err));
+  return level.getBlockFromDB(blockHeight)
+    .then( block => {
+      return block;
+    })
+    .catch(err => {throw new Error(err)});
 }
 
 // Prints whole chain data
