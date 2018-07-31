@@ -1,13 +1,12 @@
 /** Tests for the blockchain */
 
-// Running command: jasmine-node spec --autotest --watch .
+// Running command: jasmine-node spec --autoTest --watchFolders .
 
 const blockchain = require('../server/blockchain');
 const level = require('../server/level-utilities');
 const blockdata = require('./chaindata');
 
 jasmine.getEnv().defaultTimeoutInterval = 10000;
-
 
 
 describe('Blockchain initialization', () => {

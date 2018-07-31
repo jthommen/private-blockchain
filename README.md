@@ -12,7 +12,7 @@
 
 ## Server-Side Chain Interaction
 1. Alternatively, after running ```npm i```
-2. You can start a node REPL with ```node````
+2. You can start a node REPL with ```node```
 3. Copy the content of app.js into the REPL
 4. Start interacting with the chain:
   * Initialize
