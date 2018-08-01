@@ -1,5 +1,7 @@
 /** Helper functions to interact with levelDB */
 
+// TODO: Alter so it can be used with multiple instances of levelDBs
+
 const level = require('level');
 const chainDB = './chaindata';
 const db = level(chainDB);
