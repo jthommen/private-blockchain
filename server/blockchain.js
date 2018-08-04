@@ -1,7 +1,7 @@
 /** Blockchain management functions */
 
 const Block = require('./model/block');
-const level = require('./level-utilities');
+const chaindb = require('./chaindb-utilities');
 const SHA256 = require('crypto-js/sha256');
 
 
@@ -9,7 +9,7 @@ const SHA256 = require('crypto-js/sha256');
 // creates genesis block otherwise
 // or returns blockheight
 function init() {
-    return level.getBlockHeight()
+    return chaindb.getBlockHeight()
       .then(blockHeight => {
         if(blockHeight === undefined) {
           console.log('New Blockchain created.');
@@ -26,11 +26,11 @@ function init() {
 
 // Calls constructor to create new block
 // overwrite properties in object
-// add block to chain in levelDB
+// add block to chain in chaindbDB
 function addBlock(data) {
   if(!data) throw new Error("Can't create a block without data!");
   let newBlock = new Block();
-  return level.getBlockHeight()
+  return chaindb.getBlockHeight()
     .then(blockHeight => {
       if(data === 'genesis') {
         newBlock.body = "First block in the chain - Genesis block";
@@ -38,7 +38,7 @@ function addBlock(data) {
       } else {
         newBlock.body = data;
         newBlock.height = blockHeight + 1;
-        return level.getBlockFromDB(blockHeight);
+        return chaindb.getBlockFromDB(blockHeight);
       }
     }).then((block) => {
       if(data !== 'genesis') newBlock.previousBlockHash = block.hash;
@@ -49,7 +49,7 @@ function addBlock(data) {
       let key = newBlock.height;
       let value  = JSON.stringify(newBlock);
 
-      return level.addBlockToDB(key, value);
+      return chaindb.addBlockToDB(key, value);
     }).then( () => {
       let block = JSON.stringify(newBlock);
       console.log("New Block added to Chain.");
@@ -60,7 +60,7 @@ function addBlock(data) {
 
 // Prints blockheight from blockchain db
 function getBlockHeight() {
-  return level.getBlockHeight()
+  return chaindb.getBlockHeight()
     .then( height => {
       console.log(`The block height is ${height}, there are ${height+1}
        block(s) in the chain.`)
@@ -71,7 +71,7 @@ function getBlockHeight() {
 
 // Prints block from blockchain db
 function getBlock(blockHeight) {
-  return level.getBlockFromDB(blockHeight)
+  return chaindb.getBlockFromDB(blockHeight)
     .then( block => {
       return block;
     })
@@ -80,16 +80,16 @@ function getBlock(blockHeight) {
 
 // Prints whole chain data
 function getChain() {
-  return level.getChainFromDB()
+  return chaindb.getChainFromDB()
     .then(chain => {return chain;})
     .catch(err => console.log(err));
 }
 
 // Validates whole chain
-// get all blockchain data from levelDB
+// get all blockchain data from chaindbDB
 // run validation on single block and linkage
 function validateChain(){
-  return level.getChainFromDB()
+  return chaindb.getChainFromDB()
     .then(chain => {
       let errorLog = [];
 
@@ -120,7 +120,7 @@ function validateChain(){
 
 // Calls the validation function to validate a single block
 function validateBlock(blockHeight) {
-  return level.getBlockFromDB(blockHeight.toString())
+  return chaindb.getBlockFromDB(blockHeight.toString())
     .then(block => {
       if(!validation(block)) {
         console.log(`Block ${blockHeight} is corrupted!`);

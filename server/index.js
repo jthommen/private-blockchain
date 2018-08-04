@@ -5,6 +5,7 @@
 // Basic server setup
 const Hapi = require('hapi');
 const blockchain = require('./blockchain');
+const addressValidation = require('./address-validation');
 
 const server = Hapi.server({
     port: 8000,
@@ -12,56 +13,21 @@ const server = Hapi.server({
 });
 
 // Server routes
-
-// TODO: verification request
-// Example request:
-// curl -X "POST" "http://localhost:8000/requestValidation" \
-//      -H 'Content-Type: application/json; charset=utf-8' \
-//      -d $'{
-//   "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ"
-// }'
-// Example response:
-// {
-//   "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
-//   "requestTimeStamp": "1532296090",
-//   "message": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ:1532296090:starRegistry",
-//   "validationWindow": 300
-// }
 server.route({
   method: 'POST',
   path: '/requestValidation',
   config: {
-    handler: async (request, reply) => {
+    handler: (request, reply) => {
       try {
         let address = request.payload.address.toString();
-        // TODO: compose response
-        // Message to verify:
-        // [walletAddress]:[timeStamp]:starRegistry
-        // save response in levelDB instance
+        let response = addressValidation.start(address);
+        return response;
       } catch(err) { throw new Error(err) }
     }
   }
 });
 
-// TODO: Message signature validation
-// Example request:
-// curl -X "POST" "http://localhost:8000/message-signature/validate" \
-//      -H 'Content-Type: application/json; charset=utf-8' \
-//      -d $'{
-//   "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
-//   "signature": "H6ZrGrF0Y4rMGBMRT2+hHWGbThTIyhBS0dNKQRov9Yg6GgXcHxtO9GJN4nwD2yNXpnXHTWU9i+qdw5vpsooryLU="
-// }'
-// Example response:
-// {
-//   "registerStar": true,
-//   "status": {
-//     "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
-//     "requestTimeStamp": "1532296090",
-//     "message": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ:1532296090:starRegistry",
-//     "validationWindow": 193,
-//     "messageSignature": "valid"
-//   }
-// }
+// Finish validation
 server.route({
   method: 'POST',
   path: '/message-signature/validate',
@@ -70,11 +36,9 @@ server.route({
       try {
         let address = request.payload.address.toString();
         let signature = request.payload.signature.toString();
-        // TODO: compose response
-        // search levelDB for request of address
-        // verify if request exists and is still valid
-        // validate with bitcoin identity: bitcoinjs-message & bitcoinjs-lib
-        // compose response & grant or deny access
+        let response = addressValidation.finish(address, signature);
+        console.log(response);
+        return response;
       } catch(err) { throw new Error(err) }
     }
   }
@@ -157,6 +121,7 @@ server.route({
 const init = async () => {
     await blockchain.init();
     await server.start();
+    addressValidation.cleanUp();
     console.log(`Server running at: ${server.info.uri}`);
     return;
 
