@@ -30,45 +30,66 @@ function startValidation(address) {
 }
 
 // Takes an address and signature and validates them
-function finishValidation(address, signature) {
-  let resonse;
+function finishValidation(walletAddress, signature) {
+  let response;
   let validationTimeStamp = new Date().getTime().toString().slice(0,-3);
 
 
   // Get saved request
   let savedRequest = validationRequests.filter( request => {
-    return request.address === address;
+    return request.address === walletAddress;
   });
 
-  console.log('Validation Timestamp: ', validationTimeStamp);
-  console.log('Saved Request: ', savedRequest);
-  console.log('Saved Request Length: ', savedRequest.length);
+  // TODO: Loop over requests found and check if one is valid
 
+  // Get's saved properties from validation step 1
+  let savedMessage = savedRequest[0].message;
+  let savedRequestTimeStamp = savedRequest[0].requestTimeStamp;
+  let savedAddress = savedRequest[0].address;
+  let validationWindow = validationTimeStamp - savedRequestTimeStamp;
 
-  if( savedRequest.length === 0 || validationTimeStamp - saved.request[0].requestTimeStamp > VALIDATION_WINDOW) {
+  // Checks if there is valid stored validation request
+  // Returns unsuccessful otherwise
+  if( savedRequest.length === 0 || validationTimeStamp - savedRequest[0].requestTimeStamp > VALIDATION_WINDOW) {
       response = {
         registerStar: false,
         status: {
-          address: address,
+          address: walletAddress,
           message: 'Validation unsuccessful, please start over.' 
         }
       }
-
   } else {
-    response = {
-      registerStar: true,
-      status: {
-        address: address,
-        requestTimeStamp: '',
-        message: '',
-        validationWindow: 0,
-        messageSignature: ''
-      }
-    };
-  }
 
-  console.log('Response: ', response);
-  //let verification = bitcoinMessage.verify()
+    // Checks if signature provided is valid
+    // Returns unsuccessful otherwise
+    let signatureValidation = bitcoinMessage.verify(savedMessage, walletAddress, signature);
+
+    if(!signatureValidation) {
+      response = {
+        registerStar: false,
+        status: {
+          address: walletAddress,
+          message: 'Validation unsuccessful, please start over.' 
+        }
+      };
+    } else {
+
+      // If all checks pass, build success response
+      response = {
+        registerStar: true,
+        status: {
+          address: savedAddress,
+          requestTimeStamp: savedRequestTimeStamp,
+          message: savedMessage,
+          validationWindow: validationWindow,
+          messageSignature: 'valid'
+        }
+      };
+
+      // TODO: Store wallet address in DB for authorized star creators
+    }
+    
+  }
 
   return response;
 }
@@ -79,7 +100,7 @@ function requestCleanup() {
   // Run function at set interval
   setInterval( () => {
     let validationRequestQueue = validationRequests.length;
-    let discardedRequests;
+    let discardedRequests = 0;
 
     console.log('Validation Requests cached: ', validationRequestQueue);
 
