@@ -8,7 +8,6 @@ const blockchain = require('./blockchain');
 
 const addressValidation = require('./address-validation');
 const starRegistration = require('./star-registration');
-const addressDB = require('./addressdb-utilities');
 
 const server = Hapi.server({
     port: 8000,
@@ -66,50 +65,37 @@ server.route({
     }
   });
 
-  // Helper to Add Address
+  // Get star by creator address
   server.route({
-    method: 'POST',
-    path: '/addAddress',
+    method: 'GET',
+    path: '/stars/address:{address}',
     options: {
       handler: async (request, h) => {
         try {
-          let address = request.payload.address;
-          let response = await addressDB.addAddressToDB(address, 'valid');
-          return response;
+          let address = request.params.address;
+          let stars = await blockchain.getBlocksByAddress(address);
+          return stars;
         } catch(err) { throw new Error(err) }
       }
     }
   });
-  
-  // Helper to retrieve address
+
+  // Get star by star block hash
   server.route({
     method: 'GET',
-    path: '/address/{address}',
-    config: {
+    path: '/stars/hash:{hash}',
+    options: {
       handler: async (request, h) => {
         try {
-          let address = encodeURIComponent(request.params.address);
-          let status = await addressDB.getAddressInfo(address);
-          console.log(status);
-          return status;
+          let hash = request.params.hash;
+          let star = await blockchain.getBlockByHash(hash);
+          return star;
         } catch(err) { throw new Error(err) }
-      },
-      description: 'Get address validation',
-      notes: 'address GET request',
-      tags: ['api']
+      }
     }
   });
 
-  // TODO: Add star look-up routines
-  // Gets Blocks from the DB in different ways and prints them out
-
-  // 1. Star objects per submitted address
-  // search for stars with specific address
-
-  // 2. Star object by hash
-  // return star object with specific block hash
-
-  // 3. TODO modify to return star by block height
+  // Get star by it's blockheight
   server.route({
     method: 'GET',
     path: '/block/{height}',
@@ -140,3 +126,38 @@ process.on('unhandledRejection', (err) => {
 });
 
 init();
+
+
+// // Helper to Add Address
+// server.route({
+//   method: 'POST',
+//   path: '/addAddress',
+//   options: {
+//     handler: async (request, h) => {
+//       try {
+//         let address = request.payload.address;
+//         let response = await addressDB.addAddressToDB(address, 'valid');
+//         return response;
+//       } catch(err) { throw new Error(err) }
+//     }
+//   }
+// });
+
+// // Helper to retrieve address
+// server.route({
+//   method: 'GET',
+//   path: '/address/{address}',
+//   config: {
+//     handler: async (request, h) => {
+//       try {
+//         let address = encodeURIComponent(request.params.address);
+//         let status = await addressDB.getAddressInfo(address);
+//         console.log(status);
+//         return status;
+//       } catch(err) { throw new Error(err) }
+//     },
+//     description: 'Get address validation',
+//     notes: 'address GET request',
+//     tags: ['api']
+//   }
+// });

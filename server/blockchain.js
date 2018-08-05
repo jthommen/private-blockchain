@@ -78,6 +78,24 @@ function getBlock(blockHeight) {
     .catch(err => {throw new Error(err)});
 }
 
+// Returns block from chain db
+function getBlockByHash(hash) {
+  return chaindb.getBlockByHash(hash)
+    .then(block => {
+      return block;
+    })
+    .catch(err => {throw new Error(err)});
+}
+
+// Returns array of blocks from chain db
+function getBlocksByAddress(address) {
+  return chaindb.getBlocksByAddress(address)
+    .then(blocks => {
+      return blocks;
+    })
+    .catch(err => {throw new Error(err)});
+}
+
 // Prints whole chain data
 function getChain() {
   return chaindb.getChainFromDB()
@@ -159,6 +177,8 @@ module.exports = {
   addBlock: addBlock,
   getBlockHeight: getBlockHeight,
   getBlock: getBlock,
+  getBlockByHash: getBlockByHash,
+  getBlocksByAddress: getBlocksByAddress,
   getChain: getChain,
   validateBlock: validateBlock,
   validateChain: validateChain
