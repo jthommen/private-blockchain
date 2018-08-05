@@ -1,7 +1,7 @@
 /** Blockchain management functions */
 
 const Block = require('./model/block');
-const chaindb = require('./chaindb-utilities');
+const chaindb = require('./utilities/chaindb-utilities');
 const SHA256 = require('crypto-js/sha256');
 
 

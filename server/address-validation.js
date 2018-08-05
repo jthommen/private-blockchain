@@ -96,6 +96,7 @@ function finishValidation(walletAddress, signature) {
   return response;
 }
 
+// Looks up an address in the adressDB and verifies it
 function verifyAddress(address) {
   return adressdb.getAddressInfo(address)
     .then(value => {
@@ -104,6 +105,7 @@ function verifyAddress(address) {
     .catch(err => console.log('An error Occured: ', err));
 }
 
+// Stores an address in the addressDB
 function storeValidatedAddress(address) {
   adressdb.addAddressToDB(address, 'valid')
   .then( value => console.log(value))

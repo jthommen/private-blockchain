@@ -49,28 +49,7 @@ server.route({
   }
 });
 
-
-// Example response:
-// {
-//   "hash": "a59e9e399bc17c2db32a7a87379a8012f2c8e08dd661d7c0a6a4845d4f3ffb9f",
-//   "height": 1,
-//   "body": {
-//     "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
-//     "star": {
-//       "ra": "16h 29m 1.0s",
-//       "dec": "-26° 29' 24.9",
-//       "story": "466f756e642073746172207573696e672068747470733a2f2f7777772e676f6f676c652e636f6d2f736b792f"
-//     }
-//   },
-//   "time": "1532296234",
-//   "previousBlockHash": "49cce61ec3e6ae664514d5fa5722d86069cf981318fc303750ce66032d0acff3"
-// }
-// Saves a new block in the DB
-// Example POST request:
-// curl -X "POST"
-  // "http://localhost:8000/block"
-  // -H 'Content-Type: application/json'
-  // -d $'{"body":"block body contents"}'
+  // Star Registration Endpoint
   server.route({
     method: 'POST',
     path: '/block',
@@ -78,17 +57,10 @@ server.route({
       handler: async (request, h) => {
         try {
           // TODO: modify endpoint
-          let address = request.payload.address;
-          let status = await addressValidation.verifyAddress(address);
-          return h.response(status);
-          // verify if address is verified successfully
-          // verify payload.body (max. 250 words or 500 bytes)
-          // encode ASCII payload.body in hex
-          // store star in new block
-          // return
-          // let blockData = request.payload.body.toString();
-          // let block = await blockchain.addBlock(blockData);
-          // return block;
+          let address = request.payload.address.toString();
+          let star = request.payload.star;
+          let status = await starRegistration.registration(address, star);
+          return h.response(status).header('Content-Type', 'application/json');
         } catch(err) { throw new Error(err)}
       }
     }
