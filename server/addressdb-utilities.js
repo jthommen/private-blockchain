@@ -1,7 +1,7 @@
 /** Helper fucntions to interact with the address levelDB */
 
 const level = require('level');
-const addressDB = './addressdata';
+const addressDB = './adressdata';
 const db = level(addressDB);
 
 function addAddressToDB(address) {
@@ -15,9 +15,9 @@ function addAddressToDB(address) {
 // Checks how many stars an address still can create
 function getAddressInfo(address) {
   return new Promise( (reject, resolve) => {
-    db.get(address.toString(), (err, value) => {
-      return (err ? resolve(err) : resolve(value)); // Hack to make level work with hapi
-    });
+    db.get(address.toString())
+      .then(value => resolve(value))
+      .catch(err => reject(err));
   });
 }
 

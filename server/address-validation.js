@@ -88,7 +88,6 @@ function finishValidation(walletAddress, signature) {
         }
       };
 
-      // TODO: Store wallet address in DB for authorized star creators
       storeValidatedAddress(savedAddress);
     }
     

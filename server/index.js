@@ -3,50 +3,57 @@
 'use strict';
 
 // Basic server setup
-const Hapi = require('hapi');
-const blockchain = require('./blockchain');
+const express = require('express');
+const bodyParser = require('body-parser');
 
+const blockchain = require('./blockchain');
 const addressValidation = require('./address-validation');
 const starRegistration = require('./star-registration');
 const addressDB = require('./addressdb-utilities');
 
-const server = Hapi.server({
-    port: 8000,
-    host: 'localhost'
+const PORT = process.env.PORT || 8000;
+const app = express();
+app.use(bodyParser.json());
+
+// Routes here
+app.get('/', (req, res) => res.send('Express works'));
+
+
+// Test Helpers: Get address
+app.get('/address/:address', (req, res) => {
+  let address = decodeURIComponent(req.params.address);
+  addressDB.getAddressInfo(address)
+    .then( response => res.send(response))
+    .catch( err => res.send(err));
 });
 
-// Server routes
-server.route({
-  method: 'POST',
-  path: '/requestValidation',
-  options: {
-    handler: (request, h) => {
-      try {
-        let address = request.payload.address.toString();
-        let response = addressValidation.start(address);
-        return response;
-      } catch(err) { throw new Error(err) }
-    }
-  }
+// Test Helpers: Post address
+app.post('/addAddress', (req, res) => {
+  let address = req.body.address;
+  console.log('Address: ', address);
+  addressDB.addAddressToDB(address, 'valid')
+    .then(response => res.send(response))
+    .catch( err => res.send(err));;
 });
 
-// Finish validation
-server.route({
-  method: 'POST',
-  path: '/message-signature/validate',
-  options: {
-    handler: (request, h) => {
-      try {
-        let address = request.payload.address.toString();
-        let signature = request.payload.signature.toString();
-        let response = addressValidation.finish(address, signature);
-        console.log(response);
-        return response;
-      } catch(err) { throw new Error(err) }
-    }
-  }
+// Wallet validation: Request message
+app.post('/requestValidation', (req, res) => {
+  let address = req.body.address;
+  let response = addressValidation.start(address);
+  res.send(response);
 });
 
+// Wallet validation: Post signed message
+app.post('/message-signature/validate', (req, res) => {
+  let address = req.body.address;
+  let signature = req.body.signature;
+  console.log('address: ', address);
+  console.log('signature: ', signature);
+  let response = addressValidation.finish(address, signature);
+  res.send(response);
+});
+
+// Star Registration: Add Star
 
 // Example response:
 // {
@@ -69,109 +76,39 @@ server.route({
   // "http://localhost:8000/block"
   // -H 'Content-Type: application/json'
   // -d $'{"body":"block body contents"}'
-  server.route({
-    method: 'POST',
-    path: '/block',
-    options: {
-      handler: async (request, h) => {
-        try {
-          // TODO: modify endpoint
-          let address = request.payload.address;
-          // verify if address is verified successfully
-          // verify payload.body (max. 250 words or 500 bytes)
-          // encode ASCII payload.body in hex
-          // store star in new block
-          // return
-          // let blockData = request.payload.body.toString();
-          // let block = await blockchain.addBlock(blockData);
-          // return block;
-        } catch(err) { throw new Error(err)}
-      }
-    }
-  });
 
-  // Helper to Add Address
-  server.route({
-    method: 'POST',
-    path: '/addAddress',
-    options: {
-      handler: async (request, h) => {
-        try {
-          let address = request.payload.address;
-          let response = await addressDB.addAddressToDB(address, 'valid');
-          return response;
-        } catch(err) { throw new Error(err) }
-      }
-    }
-  });
-  
-  // Helper to retrieve address
-  server.route({
-    method: 'GET',
-    path: '/address/{address}',
-    config: {
-      handler: async (request, h) => {
-        let address = encodeURIComponent(request.params.address);
-        let status = await addressDB.getAddressInfo(address);
-        console.log(status);
-        return status;
-      },
-      description: 'Get address validation',
-      notes: 'address GET request',
-      tags: ['api']
-    }
-  });
-
-  // Testing route without level response
-  server.route({
-    method: 'GET',
-    path: '/addressTest/{address}',
-    handler: (request, h) => {
-      let address = encodeURIComponent(request.params.address);
-      console.log('Test Address: ', address);
-      console.log('Test Address Type. ', typeof address);
-      let response = `Everything okay with address: ${address}.`;
-      return h.response(response).type('text/html').code(200);
-    }
-  });
-
-  // TODO: Add star look-up routines
-  // Gets Blocks from the DB in different ways and prints them out
-
-  // 1. Star objects per submitted address
-  // search for stars with specific address
-
-  // 2. Star object by hash
-  // return star object with specific block hash
-
-  // 3. TODO modify to return star by block height
-  server.route({
-    method: 'GET',
-    path: '/block/{height}',
-    handler: async (request, h) => {
-      try {
-        let blockHeight = parseInt(encodeURIComponent(request.params.height));
-        let block = await blockchain.getBlock(blockHeight);
-        return block;
-      } catch(err) { throw new Error(err) }
-    }
-  });
-
-// Initialize server
-const init = async () => {
-    await blockchain.init();
-    await server.start();
-    addressValidation.cleanUp();
-    console.log(`Server running at: ${server.info.uri}`);
-    return;
-
-};
-
-// Error handling
-process.on('unhandledRejection', (err) => {
-
-    console.log(err);
-    process.exit(1);
+app.post('/block', (req, res) => {
+  let address = encodeURIComponent(req.body.address);
+  // verify if address is verified successfully
+  // verify body (max. 250 words or 500 bytes)
+  // encode ASCII payload.body in hex
+  // store star in new block
+  // return
+  // let blockData = request.payload.body.toString();
+  // let block = await blockchain.addBlock(blockData);
 });
 
-init();
+
+// Get Star Information  
+
+//   // TODO: Add star look-up routines
+//   // Gets Blocks from the DB in different ways and prints them out
+
+//   // 1. Star objects per submitted address
+//   // search for stars with specific address
+
+//   // 2. Star object by hash
+//   // return star object with specific block hash
+
+//   // 3. TODO modify to return star by block height
+
+app.get('/block/:height', (req, res) => {
+  let blockHeight = parseInt(encodeURIComponent(req.params.height));
+  blockchain.getBlock(blockHeight)
+    .then( response => res.send(response))
+    .catch( err => res.send(err));  
+});
+
+app.listen(PORT, () => console.log(`Star Registry Notary Service listening on port ${PORT}!`));
+blockchain.init();
+addressValidation.cleanUp();
