@@ -16,6 +16,7 @@ const server = Hapi.server({
 });
 
 // Server routes
+// Wallet validation: Request message
 server.route({
   method: 'POST',
   path: '/requestValidation',
@@ -31,6 +32,7 @@ server.route({
 });
 
 // Finish validation
+// Wallet validation: Post signed message
 server.route({
   method: 'POST',
   path: '/message-signature/validate',
@@ -77,6 +79,8 @@ server.route({
         try {
           // TODO: modify endpoint
           let address = request.payload.address;
+          let status = await addressValidation.verifyAddress(address);
+          return h.response(status);
           // verify if address is verified successfully
           // verify payload.body (max. 250 words or 500 bytes)
           // encode ASCII payload.body in hex
@@ -111,27 +115,16 @@ server.route({
     path: '/address/{address}',
     config: {
       handler: async (request, h) => {
-        let address = encodeURIComponent(request.params.address);
-        let status = await addressDB.getAddressInfo(address);
-        console.log(status);
-        return status;
+        try {
+          let address = encodeURIComponent(request.params.address);
+          let status = await addressDB.getAddressInfo(address);
+          console.log(status);
+          return status;
+        } catch(err) { throw new Error(err) }
       },
       description: 'Get address validation',
       notes: 'address GET request',
       tags: ['api']
-    }
-  });
-
-  // Testing route without level response
-  server.route({
-    method: 'GET',
-    path: '/addressTest/{address}',
-    handler: (request, h) => {
-      let address = encodeURIComponent(request.params.address);
-      console.log('Test Address: ', address);
-      console.log('Test Address Type. ', typeof address);
-      let response = `Everything okay with address: ${address}.`;
-      return h.response(response).type('text/html').code(200);
     }
   });
 

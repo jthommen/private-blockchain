@@ -97,10 +97,9 @@ function finishValidation(walletAddress, signature) {
 }
 
 function verifyAddress(address) {
-  adressdb.getAddressInfo(address)
-    .then(address => {
-      console.log('address: ', address);
-      return address;
+  return adressdb.getAddressInfo(address)
+    .then(value => {
+      return value === 'valid' ?  true :  false;
     })
     .catch(err => console.log('An error Occured: ', err));
 }

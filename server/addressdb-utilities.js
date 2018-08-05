@@ -14,9 +14,13 @@ function addAddressToDB(address) {
 
 // Checks how many stars an address still can create
 function getAddressInfo(address) {
-  return new Promise( (reject, resolve) => {
+  return new Promise( (resolve, reject) => {
     db.get(address.toString(), (err, value) => {
-      return (err ? resolve(err) : resolve(value)); // Hack to make level work with hapi
+      if(err) {
+        if(err.notFound) return resolve('Not found!');
+        return reject(err);
+      }
+      resolve(value);
     });
   });
 }
