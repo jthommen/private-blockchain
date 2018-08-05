@@ -2,11 +2,13 @@
 
 const bitcoin = require('bitcoinjs-lib');
 const bitcoinMessage = require('bitcoinjs-message');
+const adressdb = require('./addressdb-utilities');
 
 const VALIDATION_WINDOW = 86400; //sek
 const REGISTRY = 'starRegistry';
 const CLEANUP_INTERVAL = 300; // sek
 const validationRequests = [];
+const STARS_PER_USER = 1;
 
 
 // Returns an object that allows client side message signing for a specified address
@@ -87,11 +89,26 @@ function finishValidation(walletAddress, signature) {
       };
 
       // TODO: Store wallet address in DB for authorized star creators
+      storeValidatedAddress(savedAddress);
     }
     
   }
-
   return response;
+}
+
+function verifyAddress(address) {
+  adressdb.getAddressInfo(address)
+    .then(address => {
+      console.log('address: ', address);
+      return address;
+    })
+    .catch(err => console.log('An error Occured: ', err));
+}
+
+function storeValidatedAddress(address) {
+  adressdb.addAddressToDB(address, 'valid')
+  .then( value => console.log(value))
+  .catch( err => console.log(err));
 }
 
 // Clean-up job that discards expired validation requests
@@ -128,5 +145,7 @@ function requestCleanup() {
 module.exports = {
   start: startValidation,
   finish: finishValidation,
+  verifyAddress: verifyAddress,
+  storeValidatedAddress: storeValidatedAddress,
   cleanUp: requestCleanup
 }

@@ -5,7 +5,10 @@
 // Basic server setup
 const Hapi = require('hapi');
 const blockchain = require('./blockchain');
+
 const addressValidation = require('./address-validation');
+const starRegistration = require('./star-registration');
+const addressDB = require('./addressdb-utilities');
 
 const server = Hapi.server({
     port: 8000,
@@ -16,8 +19,8 @@ const server = Hapi.server({
 server.route({
   method: 'POST',
   path: '/requestValidation',
-  config: {
-    handler: (request, reply) => {
+  options: {
+    handler: (request, h) => {
       try {
         let address = request.payload.address.toString();
         let response = addressValidation.start(address);
@@ -31,8 +34,8 @@ server.route({
 server.route({
   method: 'POST',
   path: '/message-signature/validate',
-  config: {
-    handler: async (request, response) => {
+  options: {
+    handler: (request, h) => {
       try {
         let address = request.payload.address.toString();
         let signature = request.payload.signature.toString();
@@ -44,18 +47,7 @@ server.route({
   }
 });
 
-// TODO: Create star registry entry
-// Example request:
-// curl -X "POST" "http://localhost:8000/block" \
-//      -H 'Content-Type: application/json; charset=utf-8' \
-//      -d $'{
-//   "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
-//   "star": {
-//     "dec": "-26° 29'"'"' 24.9",
-//     "ra": "16h 29m 1.0s",
-//     "story": "Found star using https://www.google.com/sky/"
-//   }
-// }'
+
 // Example response:
 // {
 //   "hash": "a59e9e399bc17c2db32a7a87379a8012f2c8e08dd661d7c0a6a4845d4f3ffb9f",
@@ -80,20 +72,66 @@ server.route({
   server.route({
     method: 'POST',
     path: '/block',
-    config: {
-      handler: async (request, reply) => {
+    options: {
+      handler: async (request, h) => {
         try {
           // TODO: modify endpoint
+          let address = request.payload.address;
           // verify if address is verified successfully
           // verify payload.body (max. 250 words or 500 bytes)
           // encode ASCII payload.body in hex
           // store star in new block
           // return
-          let blockData = request.payload.body.toString();
-          let block = await blockchain.addBlock(blockData);
-          return block;
+          // let blockData = request.payload.body.toString();
+          // let block = await blockchain.addBlock(blockData);
+          // return block;
         } catch(err) { throw new Error(err)}
       }
+    }
+  });
+
+  // Helper to Add Address
+  server.route({
+    method: 'POST',
+    path: '/addAddress',
+    options: {
+      handler: async (request, h) => {
+        try {
+          let address = request.payload.address;
+          let response = await addressDB.addAddressToDB(address, 'valid');
+          return response;
+        } catch(err) { throw new Error(err) }
+      }
+    }
+  });
+  
+  // Helper to retrieve address
+  server.route({
+    method: 'GET',
+    path: '/address/{address}',
+    config: {
+      handler: async (request, h) => {
+        let address = encodeURIComponent(request.params.address);
+        let status = await addressDB.getAddressInfo(address);
+        console.log(status);
+        return status;
+      },
+      description: 'Get address validation',
+      notes: 'address GET request',
+      tags: ['api']
+    }
+  });
+
+  // Testing route without level response
+  server.route({
+    method: 'GET',
+    path: '/addressTest/{address}',
+    handler: (request, h) => {
+      let address = encodeURIComponent(request.params.address);
+      console.log('Test Address: ', address);
+      console.log('Test Address Type. ', typeof address);
+      let response = `Everything okay with address: ${address}.`;
+      return h.response(response).type('text/html').code(200);
     }
   });
 
@@ -110,10 +148,12 @@ server.route({
   server.route({
     method: 'GET',
     path: '/block/{height}',
-    handler: async (request, reply) => {
-      let blockHeight = parseInt(encodeURIComponent(request.params.height));
-      let block = await blockchain.getBlock(blockHeight);
-      return block;
+    handler: async (request, h) => {
+      try {
+        let blockHeight = parseInt(encodeURIComponent(request.params.height));
+        let block = await blockchain.getBlock(blockHeight);
+        return block;
+      } catch(err) { throw new Error(err) }
     }
   });
 
