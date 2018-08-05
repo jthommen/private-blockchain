@@ -42,7 +42,6 @@ server.route({
         let address = request.payload.address.toString();
         let signature = request.payload.signature.toString();
         let response = addressValidation.finish(address, signature);
-        console.log(response);
         return response;
       } catch(err) { throw new Error(err) }
     }

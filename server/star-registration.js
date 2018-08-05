@@ -12,7 +12,6 @@ function registration(address, data) {
       if(response) {
         let starDataStatus = verifyStarData(data);
         if(!starDataStatus) return new Error('Invalid star data.');
-        console.log('StarDataStatus: ', starDataStatus);
         return starDataStatus;
       } else {
         return new Error('Address invalid. Authorize first');
