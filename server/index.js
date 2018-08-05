@@ -4,8 +4,8 @@
 
 // Basic server setup
 const Hapi = require('hapi');
-const blockchain = require('./blockchain');
 
+const blockchain = require('./blockchain');
 const addressValidation = require('./address-validation');
 const starRegistration = require('./star-registration');
 
@@ -14,7 +14,9 @@ const server = Hapi.server({
     host: 'localhost'
 });
 
+
 // Server routes
+
 // Wallet validation: Request message
 server.route({
   method: 'POST',
@@ -30,7 +32,6 @@ server.route({
   }
 });
 
-// Finish validation
 // Wallet validation: Post signed message
 server.route({
   method: 'POST',
@@ -126,38 +127,3 @@ process.on('unhandledRejection', (err) => {
 });
 
 init();
-
-
-// // Helper to Add Address
-// server.route({
-//   method: 'POST',
-//   path: '/addAddress',
-//   options: {
-//     handler: async (request, h) => {
-//       try {
-//         let address = request.payload.address;
-//         let response = await addressDB.addAddressToDB(address, 'valid');
-//         return response;
-//       } catch(err) { throw new Error(err) }
-//     }
-//   }
-// });
-
-// // Helper to retrieve address
-// server.route({
-//   method: 'GET',
-//   path: '/address/{address}',
-//   config: {
-//     handler: async (request, h) => {
-//       try {
-//         let address = encodeURIComponent(request.params.address);
-//         let status = await addressDB.getAddressInfo(address);
-//         console.log(status);
-//         return status;
-//       } catch(err) { throw new Error(err) }
-//     },
-//     description: 'Get address validation',
-//     notes: 'address GET request',
-//     tags: ['api']
-//   }
-// });

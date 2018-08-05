@@ -4,6 +4,7 @@ const level = require('level');
 const addressDB = './addressdata';
 const db = level(addressDB);
 
+// Add validated address to level db
 function addAddressToDB(address) {
   return new Promise( (resolve, reject ) => {
     db.put(address.toString(), 'valid')
@@ -12,7 +13,7 @@ function addAddressToDB(address) {
   });
 }
 
-// Checks how many stars an address still can create
+// Checks if address exists and is eligible for star creation
 function getAddressInfo(address) {
   return new Promise( (resolve, reject) => {
     db.get(address.toString(), (err, value) => {

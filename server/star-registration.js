@@ -35,6 +35,7 @@ function registration(address, data) {
     });
 }
 
+// Verifies star data & encodes star story
 function verifyStarData(data) {
 
   // Check if necessary star elements are there
@@ -47,7 +48,6 @@ function verifyStarData(data) {
   if(storyBufferSize > 500) return false;
 
   return storyBuffer.toString('hex');
-
 }
 
 module.exports = {
