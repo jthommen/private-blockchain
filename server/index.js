@@ -22,9 +22,15 @@ app.get('/', (req, res) => res.send('Express works'));
 // Test Helpers: Get address
 app.get('/address/:address', (req, res) => {
   let address = decodeURIComponent(req.params.address);
-  addressDB.getAddressInfo(address)
-    .then( response => res.send(response))
-    .catch( err => res.send(err));
+  addressDB.getAddressInfo(address) // function sends value as error!
+    .then( response => {
+      console.log('Response: ', response);
+      res.send(response);
+    })
+    .catch( err => {
+      console.log('Error: ', err);
+      res.send(err);
+    });
 });
 
 // Test Helpers: Post address
