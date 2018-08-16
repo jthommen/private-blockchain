@@ -4,7 +4,7 @@
 1. Clone/download repository and navigate to folder in console/terminal window
 2. change into the folder
 3. run ```npm i```
-4. run ```./server/index.js```
+4. run ```node ./server/index.js```
 5. Try API endpoints:
   * GET:  ```http://localhost:8000/block/0```
   * POST: Use Curl command in terminal: ```curl -X "POST" "http://localhost:8000/block" -H 'Content-Type: application/json' -d $'{"body":"Test Block Data"}'```
