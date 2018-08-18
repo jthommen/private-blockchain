@@ -13,6 +13,15 @@ function addAddressToDB(address) {
   });
 }
 
+// Remove validated address from level db
+function removeAddressFromDB(address) {
+  return new Promise( (resolve, reject) => {
+    db.del(address)
+      .then( () => resolve('Deleted Address.'))
+      .catch( err => reject(err));
+  });
+}
+
 // Checks if address exists and is eligible for star creation
 function getAddressInfo(address) {
   return new Promise( (resolve, reject) => {
@@ -28,5 +37,6 @@ function getAddressInfo(address) {
 
 module.exports = {
   addAddressToDB: addAddressToDB,
+  removeAddressFromDB: removeAddressFromDB,
   getAddressInfo: getAddressInfo
 };

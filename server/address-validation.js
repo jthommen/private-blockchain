@@ -12,20 +12,38 @@ const validationRequests = []; // In-memory DB for expiring validation requests
 
 // Returns an object that allows client side message signing for a specified address
 function startValidation(address) {
-  let requestTime  = new Date().getTime().toString().slice(0,-3);
-  let message = `${address}:${requestTime}:${REGISTRY}`;
-  let response = {
-    address: address,
-    requestTimeStamp: requestTime,
-    message: message, 
-    validationWindow: VALIDATION_WINDOW
-  };
+  let response;
 
-  validationRequests.push({
-    address: address, 
-    requestTimeStamp: parseInt(requestTime),
-    message: message
-  });
+  // Time the validation is started
+  let requestTime  = new Date().getTime().toString().slice(0,-3);
+
+  // Search saved requests
+  let savedRequest = getValidationRequest(address);
+
+  // Check if saved request exists and if it's still valid
+  // Start new validation otherwise
+  if(savedRequest.length === 0 ||
+    requestTime - savedRequest[0].requestTimeStamp > VALIDATION_WINDOW) {
+
+    let message = `${address}:${requestTime}:${REGISTRY}`;
+    response = {
+      address: address,
+      requestTimeStamp: requestTime,
+      message: message, 
+      validationWindow: VALIDATION_WINDOW
+    };
+
+    validationRequests.push({
+      address: address, 
+      requestTimeStamp: parseInt(requestTime),
+      message: message
+    });
+  } else {
+
+    // If there is an validation request for the address, return it
+    response = savedRequest[0];
+    response.validationWindow = VALIDATION_WINDOW - (requestTime - savedRequest[0].requestTimeStamp);
+  }
 
   return response;
 }
@@ -33,15 +51,11 @@ function startValidation(address) {
 // Takes an address and signature and validates them
 function finishValidation(walletAddress, signature) {
   let response;
+
   let validationTimeStamp = new Date().getTime().toString().slice(0,-3);
 
-
-  // Get saved request
-  let savedRequest = validationRequests.filter( request => {
-    return request.address === walletAddress;
-  });
-
-  // SUGGESTION: Loop over requests found and check if one is valid
+  // Get saved validation request
+  let savedRequest = getValidationRequest(walletAddress);
 
   // Get's saved properties from validation step 1
   let savedMessage = savedRequest[0].message;
@@ -94,6 +108,13 @@ function finishValidation(walletAddress, signature) {
   return response;
 }
 
+// Retrieves validation request from in-memory store
+function getValidationRequest(address) {
+  return validationRequests.filter( request => {
+    return request.address === address;
+  });
+}
+
 // Looks up an address in the adressDB and verifies it
 function verifyAddress(address) {
   return adressdb.getAddressInfo(address)
@@ -106,8 +127,8 @@ function verifyAddress(address) {
 // Stores an address in the addressDB
 function storeValidatedAddress(address) {
   adressdb.addAddressToDB(address, 'valid')
-  .then( value => console.log(value))
-  .catch( err => console.log(err));
+    .then( value => console.log(value))
+    .catch( err => console.log(err));
 }
 
 // Clean-up job that discards expired validation requests on regular interval
@@ -126,12 +147,20 @@ function requestCleanup() {
       // Get new timestamp at interval start
       let timeStamp = new Date().getTime().toString().slice(0,-3);
 
-      // Loop over array and find first request with valid timestamp
+      // Loop over array
       validationRequests.forEach( (request, i) => {
-        if(timeStamp - request.requestTimeStamp > VALIDATION_WINDOW) {
+        
+        // Try to find first request with valid timestamp
+        if(timeStamp - request.requestTimeStamp < VALIDATION_WINDOW) {
           validationRequests.splice(0, i);
           discardedRequests = i;
+        } else {
+
+          // If there is none, discard whole array
+          validationRequests.splice(0, validationRequestQueue);
+          discardedRequests = validationRequestQueue;
         }
+
       });
 
       console.log('Validation Requests discarded: ', discardedRequests);

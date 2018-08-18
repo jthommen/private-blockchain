@@ -55,12 +55,11 @@ server.route({
     options: {
       handler: async (request, h) => {
         try {
-          // TODO: modify endpoint
           let address = request.payload.address.toString();
           let star = request.payload.star;
           let status = await starRegistration.registration(address, star);
           return h.response(status).header('Content-Type', 'application/json');
-        } catch(err) { throw new Error(err)}
+        } catch(err) { throw new Error(err) }
       }
     }
   });
@@ -73,7 +72,7 @@ server.route({
       handler: async (request, h) => {
         try {
           let address = request.params.address;
-          let stars = await blockchain.getBlocksByAddress(address);
+          let stars = await blockchain.getBlockByAddress(address);
           return stars;
         } catch(err) { throw new Error(err) }
       }
@@ -102,7 +101,7 @@ server.route({
     handler: async (request, h) => {
       try {
         let blockHeight = parseInt(encodeURIComponent(request.params.height));
-        let block = await blockchain.getBlock(blockHeight);
+        let block = await blockchain.getBlockByHeight(blockHeight);
         return block;
       } catch(err) { throw new Error(err) }
     }

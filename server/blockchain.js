@@ -70,9 +70,11 @@ function getBlockHeight() {
 }
 
 // Prints block from blockchain db
-function getBlock(blockHeight) {
+function getBlockByHeight(blockHeight) {
   return chaindb.getBlockFromDB(blockHeight)
     .then( block => {
+      // TODO: Decode block.data.story to ASCII
+      //if(block.body.star.story) block.body.star.story = 
       return block;
     })
     .catch(err => {throw new Error(err)});
@@ -82,15 +84,17 @@ function getBlock(blockHeight) {
 function getBlockByHash(hash) {
   return chaindb.getBlockByHash(hash)
     .then(block => {
+      // TODO: Decode block.data.story to ASCII
       return block;
     })
     .catch(err => {throw new Error(err)});
 }
 
 // Returns array of blocks from chain db
-function getBlocksByAddress(address) {
+function getBlockByAddress(address) {
   return chaindb.getBlocksByAddress(address)
     .then(blocks => {
+      // TODO: Decode block.data.story to ASCII
       return blocks;
     })
     .catch(err => {throw new Error(err)});
@@ -176,9 +180,9 @@ module.exports = {
   init: init,
   addBlock: addBlock,
   getBlockHeight: getBlockHeight,
-  getBlock: getBlock,
+  getBlockByHeight: getBlockByHeight,
   getBlockByHash: getBlockByHash,
-  getBlocksByAddress: getBlocksByAddress,
+  getBlockByAddress: getBlockByAddress,
   getChain: getChain,
   validateBlock: validateBlock,
   validateChain: validateChain

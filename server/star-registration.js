@@ -2,35 +2,68 @@
 
 const validation = require('./address-validation');
 const blockchain = require('./blockchain');
+const addressDB = require('./utilities/addressdb-utilities');
 
 function registration(address, data) {
+  let response;
 
   // Validates address
   // fails if no address --> error
   return validation.verifyAddress(address)
-    .then(response => {
-      if(response) {
-        let starDataStatus = verifyStarData(data);
-        if(!starDataStatus) return new Error('Invalid star data.');
-        return starDataStatus;
-      } else {
-        return new Error('Address invalid. Authorize first');
+
+    // Verify if address is eligible to create a star
+    .then(validationResult => {
+      console.log('Validation Result: ', validationResult);
+
+      // Check if address is allowed to store star
+      if(!validationResult) {
+        return response = {
+          registerStar: false,
+          status: {
+            address: address,
+            message: 'Address invalid. Authorize first.' 
+          }
+        };
+      } 
+
+      // Check if star data is valid and convert to hex
+      // return failure otherwise
+      let starDataStatus = verifyStarData(data);
+      console.log('Star Data Status : ', Boolean(starDataStatus));
+
+      if(starDataStatus === false) {
+        console.log('damn');
+        return response = {
+          registerStar: false,
+          status: {
+            address: address,
+            message: 'Invalid star data.' 
+          }
+        };
       }
-    })
-    .then( starStoryHex => {
-      // Compose star body object to add block
+      
+      // Build star data object    
       let starData = {
         address: address,
         star: {
           ra: data.ra,
           dec: data.dec,
-          story: starStoryHex
+          story: starDataStatus
         }
       };
+      
       if(data.con) starData.star.con = data.con;
       if(data.mag) starData.star.mag = data.mag;
 
-      return blockchain.addBlock(starData);
+      return blockchain.addBlock(starData)
+        .then(block => {
+          response = block;
+          return addressDB.removeAddressFromDB(address);
+        })
+        .then( status => {
+          console.log('Address status: ', status);
+          return response;
+        });
     });
 }
 
