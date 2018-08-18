@@ -74,7 +74,7 @@ function getBlockByHeight(blockHeight) {
   return chaindb.getBlockFromDB(blockHeight)
     .then( block => {
       if(block.body.star && block.body.star.story) {
-        block.body.star.story = hexToUTF8(block.body.star.story);
+        block.body.star.storyDecoded = hexToUTF8(block.body.star.story);
       }
       return block;
     })
@@ -86,7 +86,7 @@ function getBlockByHash(hash) {
   return chaindb.getBlockByHash(hash)
     .then(block => {
       if(block.body.star && block.body.star.story) {
-        block.body.star.story = hexToUTF8(block.body.star.story);
+        block.body.star.storyDecoded = hexToUTF8(block.body.star.story);
       }
       return block;
     })
@@ -99,7 +99,7 @@ function getBlockByAddress(address) {
     .then(blocks => {
       let block = blocks[0];
       if(block.body.star && block.body.star.story) {
-        block.body.star.story = hexToUTF8(block.body.star.story);
+        block.body.star.storyDecoded = hexToUTF8(block.body.star.story);
       }
       return block;
     })
