@@ -73,8 +73,9 @@ function getBlockHeight() {
 function getBlockByHeight(blockHeight) {
   return chaindb.getBlockFromDB(blockHeight)
     .then( block => {
-      // TODO: Decode block.data.story to ASCII
-      //if(block.body.star.story) block.body.star.story = 
+      if(block.body.star && block.body.star.story) {
+        block.body.star.story = hexToUTF8(block.body.star.story);
+      }
       return block;
     })
     .catch(err => {throw new Error(err)});
@@ -84,7 +85,9 @@ function getBlockByHeight(blockHeight) {
 function getBlockByHash(hash) {
   return chaindb.getBlockByHash(hash)
     .then(block => {
-      // TODO: Decode block.data.story to ASCII
+      if(block.body.star && block.body.star.story) {
+        block.body.star.story = hexToUTF8(block.body.star.story);
+      }
       return block;
     })
     .catch(err => {throw new Error(err)});
@@ -94,8 +97,11 @@ function getBlockByHash(hash) {
 function getBlockByAddress(address) {
   return chaindb.getBlocksByAddress(address)
     .then(blocks => {
-      // TODO: Decode block.data.story to ASCII
-      return blocks;
+      let block = blocks[0];
+      if(block.body.star && block.body.star.story) {
+        block.body.star.story = hexToUTF8(block.body.star.story);
+      }
+      return block;
     })
     .catch(err => {throw new Error(err)});
 }
@@ -174,6 +180,11 @@ function validation(block){
       console.log('Block #'+clone.height+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
       return false;
   }
+}
+
+function hexToUTF8(element) {
+  let buffer = Buffer.from(element, 'hex');
+  return buffer.toString('utf8');
 }
 
 module.exports = {

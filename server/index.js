@@ -100,7 +100,7 @@ server.route({
     path: '/block/{height}',
     handler: async (request, h) => {
       try {
-        let blockHeight = parseInt(encodeURIComponent(request.params.height));
+        let blockHeight = request.params.height;
         let block = await blockchain.getBlockByHeight(blockHeight);
         return block;
       } catch(err) { throw new Error(err) }
