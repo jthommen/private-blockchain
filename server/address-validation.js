@@ -61,7 +61,8 @@ function finishValidation(walletAddress, signature) {
   let savedMessage = savedRequest[0].message;
   let savedRequestTimeStamp = savedRequest[0].requestTimeStamp;
   let savedAddress = savedRequest[0].address;
-  let validationWindow = validationTimeStamp - savedRequestTimeStamp;
+  let validationWindow = VALIDATION_WINDOW - (validationTimeStamp - savedRequestTimeStamp);
+
 
   // Checks if there is valid stored validation request
   // Returns unsuccessful otherwise
@@ -101,7 +102,14 @@ function finishValidation(walletAddress, signature) {
         }
       };
 
+      // Store validated address to enable star registration
       storeValidatedAddress(savedAddress);
+
+      // After successful validation, remove request from array
+      let requestIndex = validationRequests.findIndex(request => {
+        return request.address === savedAddress;
+      });
+      validationRequests.splice(requestIndex, 1);
     }
     
   }
